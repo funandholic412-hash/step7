@@ -143,7 +143,7 @@
 
   <!-- ============ APP ============ -->
   <div id="app">
-    <div class="brandbar"><span class="dot"></span> リスト成約シナリオ設計AI &nbsp;/&nbsp; Produced by 株式会社Fun&amp;holic</div>
+    <div class="brandbar"><span class="dot"></span> リスト成約シナリオ設計AI &nbsp;/&nbsp; Produced by Fun&amp;holic Inc.</div>
 
     <div class="hero">
       <span class="kicker">STEP DELIVERY SCENARIO</span>
@@ -230,7 +230,7 @@
     <div id="results"></div>
 
     <div class="foot">
-      <div class="credit">Produced by 株式会社Fun&amp;holic</div>
+      <div class="credit">Produced by Fun&amp;holic Inc.</div>
       <div>たった7通で売れる リスト成約シナリオ設計AI</div>
     </div>
   </div>
@@ -514,7 +514,7 @@ function render(){
 }
 
 function fullText(msgs){
-  let out=`【たった7通で売れる リスト成約シナリオ】\nProduced by 株式会社Fun&holic\n\n`;
+  let out=`【たった7通で売れる リスト成約シナリオ】\nProduced by Fun&holic Inc.\n\n`;
   msgs.forEach((m,i)=>{
     out+=`━━━━━━━━━━━━━━━━━━\n${i+1}通目：${m.stage}（${m.when}）\n設計意図：${m.role}\n━━━━━━━━━━━━━━━━━━\n\n■件名\n${m.subject}\n\n■本文\n${m.body}\n\n\n`;
   });
