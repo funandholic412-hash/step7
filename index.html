@@ -4,13 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>たった7通で売れる リスト成約シナリオ設計AI</title>
-<meta name="description" content="登録者を『欲しい』に変える7通のステップ配信シナリオを自動設計。商品情報を入れるだけで、件名・本文・CTAまで一気に生成します。">
+<meta name="description" content="登録者を『欲しい』に変える7通のステップ配信シナリオを自動設計。冒頭フックで当事者化し、個別相談・オートウェビナーへ誘導する動線まで一気に作ります。">
 <style>
   :root{
     --bg:#0f1020; --panel:#171933; --panel2:#1e2143; --line:#2c2f57;
     --ink:#eef0ff; --sub:#a6a9d6; --mut:#7b7fb0;
     --accent:#7c5cff; --accent2:#00d4b3; --accent3:#ff5c8a;
-    --ok:#3ddc97; --warn:#ffcf5c;
     --radius:16px; --shadow:0 18px 50px rgba(0,0,0,.45);
     --grad:linear-gradient(135deg,#7c5cff 0%,#5b8bff 50%,#00d4b3 100%);
   }
@@ -21,15 +20,14 @@
     background:radial-gradient(1200px 700px at 80% -10%,rgba(124,92,255,.18),transparent 60%),
                radial-gradient(1000px 600px at -10% 10%,rgba(0,212,179,.12),transparent 55%),
                var(--bg);
-    color:var(--ink); line-height:1.75; -webkit-font-smoothing:antialiased;
-    min-height:100vh;
+    color:var(--ink); line-height:1.7; -webkit-font-smoothing:antialiased; min-height:100vh;
   }
   .wrap{max-width:920px;margin:0 auto;padding:26px 18px 80px}
   a{color:var(--accent2)}
   .brandbar{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--sub);margin-bottom:18px}
   .brandbar .dot{width:9px;height:9px;border-radius:50%;background:var(--grad)}
 
-  /* ===== Gate ===== */
+  /* Gate */
   #gate{max-width:440px;margin:8vh auto;background:var(--panel);border:1px solid var(--line);
     border-radius:20px;padding:34px 28px;box-shadow:var(--shadow);text-align:center}
   #gate .lock{font-size:34px;margin-bottom:6px}
@@ -42,7 +40,7 @@
     background:var(--grad);color:#fff;cursor:pointer;letter-spacing:.05em}
   #gate .err{color:var(--accent3);font-size:13px;height:18px;margin-top:10px}
 
-  /* ===== App ===== */
+  /* App */
   #app{display:none}
   .hero{background:linear-gradient(180deg,rgba(124,92,255,.14),rgba(124,92,255,0));
     border:1px solid var(--line);border-radius:var(--radius);padding:26px 24px;margin-bottom:22px}
@@ -74,12 +72,12 @@
   .field label .opt{color:var(--mut);font-size:11px;margin-left:4px;font-weight:500}
   .field .ex{color:var(--mut);font-size:11.5px;font-weight:400;margin-left:4px}
   input[type=text],textarea,select{width:100%;padding:11px 13px;font-size:14px;background:var(--panel2);
-    border:1px solid var(--line);border-radius:10px;color:var(--ink);outline:none;font-family:inherit;resize:vertical}
+    border:1px solid var(--line);border-radius:10px;color:var(--ink);outline:none;font-family:inherit;resize:vertical;line-height:1.6}
   input[type=text]:focus,textarea:focus,select:focus{border-color:var(--accent)}
   textarea{min-height:64px}
   .full{grid-column:1 / -1}
   .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
-  .chip{flex:1;min-width:calc(33% - 8px);text-align:center;padding:10px 8px;font-size:13px;border:1px solid var(--line);
+  .chip{flex:1;min-width:calc(50% - 8px);text-align:center;padding:10px 8px;font-size:13px;border:1px solid var(--line);
     border-radius:10px;background:var(--panel2);color:var(--sub);cursor:pointer;user-select:none;transition:.12s}
   .chip:hover{border-color:var(--accent)}
   .chip.on{background:var(--grad);color:#fff;border-color:transparent;font-weight:700}
@@ -87,9 +85,7 @@
   .go{width:100%;margin-top:20px;padding:16px;font-size:16px;font-weight:800;letter-spacing:.05em;border:0;border-radius:13px;
     background:var(--grad);color:#fff;cursor:pointer;box-shadow:0 10px 26px rgba(124,92,255,.4)}
   .go:active{transform:translateY(1px)}
-  .go[disabled]{opacity:.5;cursor:not-allowed;box-shadow:none}
 
-  /* ===== Results ===== */
   #results{margin-top:8px}
   .resbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0 18px}
   .resbar h2{font-size:18px;margin:0;flex:1 1 auto}
@@ -125,13 +121,12 @@
     background:#0c0d1c;border:1px solid var(--accent);color:#fff;padding:11px 20px;border-radius:12px;font-size:13.5px;
     box-shadow:var(--shadow);transition:.25s;z-index:50;pointer-events:none}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-  .hidden{display:none!important}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <!-- ============ GATE ============ -->
+  <!-- GATE -->
   <div id="gate">
     <div class="lock">🔒</div>
     <h1>たった7通で売れる<br>リスト成約シナリオ設計AI</h1>
@@ -141,32 +136,31 @@
     <div class="err" id="passErr"></div>
   </div>
 
-  <!-- ============ APP ============ -->
+  <!-- APP -->
   <div id="app">
     <div class="brandbar"><span class="dot"></span> リスト成約シナリオ設計AI &nbsp;/&nbsp; Produced by Fun&amp;holic Inc.</div>
 
     <div class="hero">
       <span class="kicker">STEP DELIVERY SCENARIO</span>
       <h1>登録者を<span class="u">「欲しい」</span>に変える、<br>たった7通のステップ配信。</h1>
-      <p>商品情報を入れるだけ。7通目でいきなり売り込まず、<b>個別相談 or オートウェビナーへ自然に誘導</b>する動線を、件名・本文・CTAまで自動で設計します。LINEでもメルマガでもそのまま使えます。</p>
+      <p>冒頭1〜2行で<b>読者の悩みをズバリ代弁</b>して当事者化。売り込まず、<b>個別相談 or オートウェビナーへ誘導</b>する動線を、件名・本文・CTAまで自動で設計します。</p>
     </div>
 
     <details class="how">
       <summary>📖 使い方（30秒） <span class="chev">▾</span></summary>
       <div class="body">
         <ol>
-          <li><b>下のフォームに商品情報を入力</b>します（★は必須。多く埋めるほど精度が上がります）。</li>
-          <li><b>「7通のシナリオを生成する」</b>を押すと、1通目〜7通目が一気に出ます。</li>
-          <li>各通は<b>件名・本文・CTA</b>入り。そのままコピーしてLINE公式／メルマガに貼るだけ。文章は自由に編集できます。</li>
+          <li><b>商品情報と「ターゲットの悩み」を入力</b>します（★は必須）。悩みは1行に1つ、複数書くほど冒頭のフックが強くなります。</li>
+          <li><b>誘導先（個別相談 or オートウェビナー）と、その"名前"</b>を入力します。</li>
+          <li><b>「7通のシナリオを生成する」</b>で、件名・本文・CTA入りの7通が完成。そのままLINE公式／メルマガに貼れます（文章は自由に編集可）。</li>
         </ol>
-        <p style="margin:10px 0 0">💡 このツールは<b>ブラウザ内だけで完結</b>します（入力内容はどこにも送信されません／APIキー不要）。「再生成」で切り口違いのパターンも作れます。</p>
+        <p style="margin:10px 0 0">💡 ブラウザ内だけで完結（入力はどこにも送信されません／APIキー不要）。「再生成」で切り口違いも作れます。</p>
       </div>
     </details>
 
-    <!-- INPUT -->
     <div class="card">
-      <h2><span class="n">✎</span>あなたの商品を教えてください</h2>
-      <p class="hint">★＝必須。空欄でも動きますが、埋めるほどシナリオが具体的になります。</p>
+      <h2><span class="n">✎</span>あなたの商品と、届けたい相手を教えてください</h2>
+      <p class="hint">★＝必須。「悩み」を具体的に書くほど、冒頭のフックが刺さります。</p>
       <div class="grid">
         <div class="field full">
           <label>商品・サービス名<span class="req">★</span> <span class="ex">例：ゼロから始めるInstagram収益化講座</span></label>
@@ -177,51 +171,22 @@
           <input type="text" id="i_who" placeholder="どんな人に届けたいか">
         </div>
         <div class="field">
-          <label>その人の悩み・今の状態<span class="req">★</span> <span class="ex">例：発信しても反応がない</span></label>
-          <input type="text" id="i_pain" placeholder="ターゲットが抱える悩み・現状">
+          <label>提供する理想の未来<span class="req">★</span> <span class="ex">例：好きな発信で月10万円を安定して稼げる</span></label>
+          <input type="text" id="i_after" placeholder="この商品で手に入る未来（After）">
         </div>
         <div class="field full">
-          <label>提供する変化・理想の未来<span class="req">★</span> <span class="ex">例：好きな発信で月10万円を安定して稼げる</span></label>
-          <input type="text" id="i_after" placeholder="この商品で手に入る Before→After">
+          <label>ターゲットの悩み<span class="req">★</span> <span class="ex">1行に1つ・複数書くと冒頭の代弁が強くなる</span></label>
+          <textarea id="i_pains" placeholder="発信しても反応がない&#10;何を投稿すればいいか分からない&#10;集客が安定しない&#10;セールスが苦手で成約できない"></textarea>
         </div>
         <div class="field">
-          <label>実績・お客様の声 <span class="opt">任意</span> <span class="ex">例：受講生120名／3ヶ月で月商50万達成</span></label>
+          <label>実績・お客様の声 <span class="opt">任意</span> <span class="ex">例：受講生120名／3ヶ月で月商50万</span></label>
           <textarea id="i_proof" placeholder="数字・体験談・権威づけがあれば"></textarea>
         </div>
         <div class="field">
-          <label>商品の中身・特典 <span class="opt">任意</span> <span class="ex">例：動画12本＋個別添削3回＋テンプレ集</span></label>
-          <textarea id="i_offer" placeholder="オファーに含まれるもの"></textarea>
-        </div>
-        <div class="field full">
-          <label>締切・限定条件 <span class="opt">任意</span> <span class="ex">例：今週日曜24時まで／先着10名は半額</span></label>
-          <input type="text" id="i_deadline" placeholder="緊急性を作る条件（あれば）">
+          <label>締切・限定条件 <span class="opt">任意</span> <span class="ex">例：今週日曜24時まで／先着10名</span></label>
+          <textarea id="i_deadline" placeholder="緊急性を作る条件（あれば）"></textarea>
         </div>
 
-        <div class="field">
-          <label>価格帯<span class="req">★</span></label>
-          <div class="chips" id="price">
-            <div class="chip" data-v="free">無料〜3千円</div>
-            <div class="chip" data-v="low">〜1万円</div>
-            <div class="chip on" data-v="mid">1〜5万円</div>
-            <div class="chip" data-v="high">5〜30万円</div>
-            <div class="chip" data-v="premium">30万円〜</div>
-          </div>
-        </div>
-        <div class="field">
-          <label>配信媒体<span class="req">★</span></label>
-          <div class="chips" id="medium">
-            <div class="chip on" data-v="line">LINE公式</div>
-            <div class="chip" data-v="mail">メルマガ</div>
-          </div>
-        </div>
-        <div class="field">
-          <label>トーン<span class="req">★</span></label>
-          <div class="chips" id="tone">
-            <div class="chip on" data-v="friendly">親しみ・共感</div>
-            <div class="chip" data-v="authority">権威・専門</div>
-            <div class="chip" data-v="passion">情熱・熱量</div>
-          </div>
-        </div>
         <div class="field">
           <label>誘導ゴール<span class="req">★</span> <span class="ex">7通目で売り込まず、ここへ誘導</span></label>
           <div class="chips" id="goal">
@@ -229,11 +194,14 @@
             <div class="chip" data-v="webinar">オートウェビナーへ誘導</div>
           </div>
         </div>
+        <div class="field">
+          <label id="cvLabel">個別相談の名前<span class="req">★</span> <span class="ex" id="cvEx">例：ゼロイチ突破 個別戦略セッション</span></label>
+          <input type="text" id="i_cvname" placeholder="例：ゼロイチ突破 個別戦略セッション">
+        </div>
       </div>
       <button class="go" id="go">🚀 7通のシナリオを生成する</button>
     </div>
 
-    <!-- RESULTS -->
     <div id="results"></div>
 
     <div class="foot">
@@ -246,10 +214,8 @@
 <div class="toast" id="toast"></div>
 
 <script>
-/* =========================================================
-   GATE
-========================================================= */
-const PASSCODE = "step7";
+/* ===== GATE ===== */
+const PASSCODE="step7";
 const gate=document.getElementById('gate'), app=document.getElementById('app');
 function tryPass(){
   const v=document.getElementById('pass').value.trim().toLowerCase();
@@ -259,241 +225,191 @@ function tryPass(){
 document.getElementById('passBtn').addEventListener('click',tryPass);
 document.getElementById('pass').addEventListener('keydown',e=>{if(e.key==='Enter')tryPass();});
 
-/* =========================================================
-   CHIP SELECTORS
-========================================================= */
-function chipGroup(id){
-  const box=document.getElementById(id);
-  box.addEventListener('click',e=>{
-    const c=e.target.closest('.chip'); if(!c)return;
-    box.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
-    c.classList.add('on');
-  });
-  return ()=>box.querySelector('.chip.on').dataset.v;
-}
-const getPrice=chipGroup('price'), getMedium=chipGroup('medium'), getTone=chipGroup('tone'), getGoal=chipGroup('goal');
+/* ===== GOAL selector + dynamic name label ===== */
+const goalBox=document.getElementById('goal');
+function getGoal(){ return goalBox.querySelector('.chip.on').dataset.v; }
+goalBox.addEventListener('click',e=>{
+  const c=e.target.closest('.chip'); if(!c)return;
+  goalBox.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+  c.classList.add('on');
+  const consult=getGoal()==='consult';
+  document.getElementById('cvLabel').innerHTML=(consult?'個別相談の名前':'セミナー／ウェビナーの名前')
+    +'<span class="req">★</span> <span class="ex">'+(consult?'例：ゼロイチ突破 個別戦略セッション':'例：90分でわかる 集客の教科書セミナー')+'</span>';
+  document.getElementById('i_cvname').placeholder=consult?'例：ゼロイチ突破 個別戦略セッション':'例：90分でわかる 集客の教科書セミナー';
+});
 
-/* =========================================================
-   ENGINE  — deterministic-with-variation generator
-========================================================= */
-function seedFrom(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+/* ===== ENGINE ===== */
+const msgsTotal=7;
+function seedFrom(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
 function rng(seed){let s=seed>>>0;return()=>{s^=s<<13;s^=s>>>17;s^=s<<5;s>>>=0;return s/4294967296;};}
-function pick(arr,r){return arr[Math.floor(r()*arr.length)];}
-
+function pick(a,r){return a[Math.floor(r()*a.length)];}
 function esc(v,fb){v=(v||'').trim();return v?v:fb;}
-
-// tone-flavored sentence endings / openers
-const TONE={
-  friendly:{hi:['こんにちは！','お疲れさまです😊','こんにちは、○○です。'],warm:'（あなたのその一歩、私はちゃんと受け取りました）',end:['よかったら、ぜひ読んでみてくださいね。','一緒にやっていきましょう😊','今日も応援しています！']},
-  authority:{hi:['こんにちは。','いつもご覧いただきありがとうございます。','○○です。'],warm:'（今日は少し踏み込んだ話をします）',end:['ぜひ本質を掴んでください。','事実として知っておいてください。','今日の内容は、必ず役に立ちます。']},
-  passion:{hi:['お疲れさまです！','今日はどうしても伝えたいことがあります。','○○です、正直に書きます。'],warm:'（熱くなってしまったらすみません）',end:['本気なら、絶対に読んでください。','あなたの人生、ここから変えていきましょう。','受け取ってください、全力で書きました。']}
-};
-const PRICE={
-  free:{trust:1,urg:2,label:'無料〜3千円'}, low:{trust:1,urg:3,label:'1万円以下'},
-  mid:{trust:2,urg:3,label:'1〜5万円'}, high:{trust:3,urg:3,label:'5〜30万円'}, premium:{trust:4,urg:2,label:'30万円以上'}
-};
-
-function br(medium,strong){ // line spacing style
-  return medium==='line' ? '\n\n' : (strong?'\n\n':'\n');
-}
 
 function build(inp){
   const r=rng(seedFrom(JSON.stringify(inp)+'|'+inp._salt));
-  const t=TONE[inp.tone], p=PRICE[inp.price];
   const product=esc(inp.product,'この商品');
   const who=esc(inp.who,'あなた');
-  const pain=esc(inp.pain,'思うような結果が出ていない');
-  const after=esc(inp.after,'理想の成果を手に入れる');
+  const painList=(inp.pains||'').split('\n').map(s=>s.trim()).filter(Boolean);
+  const pain=painList[0]||'思うような結果が出ていない';
+  const after=esc(inp.after,'理想の未来を手に入れる');
   const proof=(inp.proof||'').trim();
-  const offer=(inp.offer||'').trim();
   const deadline=(inp.deadline||'').trim();
-  const L=inp.medium==='line';
-  const sep=L?'\n\n':'\n\n';
   const isConsult=(inp.goal||'consult')==='consult';
+  const cvname=(inp.cvname||'').trim();
   const CV=isConsult
-    ? {name:'無料個別相談', cta:'個別相談に申し込む', link:'{予約リンクをここに}', reg:'予約', verb:'お話し'}
-    : {name:'無料オンラインセミナー', cta:'セミナーを視聴予約する', link:'{視聴予約リンクをここに}', reg:'視聴予約', verb:'ご視聴'};
-
-  const hi=()=>pick(t.hi,r).replace('○○','（あなたの名前）');
-  const end=()=>pick(t.end,r);
-
+    ? {name:cvname||'個別相談会', reg:'予約', verb:'参加', link:'{予約リンクをここに}'}
+    : {name:cvname||'オンラインセミナー', reg:'視聴予約', verb:'視聴', link:'{視聴予約リンクをここに}'};
+  const sep='\n\n';
   const msgs=[];
 
-  /* ---- 1. 歓迎＋共感ストーリー ---- */
+  /* 1. つかみ＝悩みの代弁 */
+  const hook = painList.length>=2
+    ? `こんなこと、ありませんか？👇\n${painList.slice(0,4).map(p=>'☑ '+p).join('\n')}`
+    : `「${pain}」——そんな毎日に、疲れていませんか？`;
   msgs.push({
-    stage:'共感と歓迎', role:'自己開示ストーリーで心をひらき、続きを読ませる', when:'登録直後（0日目）',
+    stage:'つかみ（悩みの代弁）', role:'冒頭で具体的な悩みを代弁し、当事者意識を作る', when:'登録直後（0日目）',
     subject:pick([
-      `＼はじめまして。まず、私の“かっこ悪い過去”を聞いてください／`,
-      `「${pain}」——あの夜の苦しさ、私も知っています`,
-      `なぜ、最初の一通目に“私の失敗談”を書くのか？`
+      `＼${pain}——その悩み、ここで終わりにしませんか？／`,
+      `もし1つでも当てはまるなら、読んでください`,
+      `${pain}のは、あなたのせいじゃありません`
     ],r),
     body:[
-      `${hi()}`,
-      `受け取ってくださって、本当にありがとうございます。${t.warm}`,
-      `いきなりですが、正直に打ち明けます。かつての私は、「${pain}」の真っただ中にいました。何をやってもうまくいかず、「自分には向いていないんじゃないか」と、スマホを握りしめたまま夜を明かしたことも、一度や二度ではありません。`,
-      `でも、ある“順番”に出会った瞬間、景色が一変しました。${who}が${after}——それは、特別な才能でも、根性でもなかった。「正しい順番を知っているか」。たった、それだけの差だったんです。`,
-      `これから${msgsTotal}通で、その順番を一つずつ、私の実体験ごとお渡しします。次回は「${pain}の“本当の正体”」。ここを知らずに動くと、あなたの努力はぜんぶ空回りしてしまう。だから、絶対に見逃さないでください。`,
-      `${end()}`
+      hook,
+      `どれか1つでも当てはまったなら、この配信はあなたのためのものです。`,
+      `断言します。${who}が「${pain}」のは、才能でも努力不足でもない。ただ「正しい順番」を知らないだけです。`,
+      `${after}——そこへ最短で近づく順番を、${msgsTotal}通で1つずつ渡します。`
     ].join(sep),
-    cta:'自己開示ストーリーで共感を作り、次回への“開封理由”を仕込む'
+    cta:'過去の自分語りではなく“悩みの代弁”で当事者化（冒頭1〜2行が命）'
   });
 
-  /* ---- 2. 問題の再定義・誤解を壊す ---- */
+  /* 2. 常識を壊す */
   msgs.push({
-    stage:'問題の再定義', role:'「努力が報われない本当の理由」で常識を壊す', when:'1日後',
+    stage:'常識を壊す', role:'「努力が報われない本当の理由」を短く突きつける', when:'1日後',
     subject:pick([
-      `＼あなたが${pain}のは、努力不足のせいじゃない／`,
-      `なぜ、こんなに頑張っているのに${pain}のか？`,
-      `ほとんどの人が、真逆をやっています`
+      `＼${pain}のは、努力不足のせいじゃない／`,
+      `なぜ、頑張っても${pain}のか？`,
+      `9割の人が、真逆をやっています`
     ],r),
     body:[
-      `${hi()}`,
-      `今日は少し、耳の痛い話をします。でも、ここが一番大事なので、正直に書きますね。`,
-      `${who}が「${pain}」——その犯人は、あなたの“努力不足”ではありません。本当の原因は、“やる順番”と“思い込み”がズレていること。ただ、それだけです。`,
-      `たとえば、こんな思い込みはありませんか？👇`,
-      `❌「とにかく量をこなせば、いつか報われる」\n❌「ノウハウをもっと集めれば、解決する」\n❌「まだ自分には“何か”が足りない」`,
-      `全部、逆なんです。足りないものを“足す”のではなく、遠回りを“やめる”。${after}人たちは、みんな最初に「やらないこと」を決めていました。`,
-      `次回は、その“新しい進め方”の全体像をお見せします。読んだ瞬間、明日からの動き方が変わりますよ。`,
-      `${end()}`
+      `今日は少し、耳の痛い話をします。`,
+      `${who}が「${pain}」。原因は「量」でも「根性」でもありません。`,
+      `犯人は“順番”と“思い込み”。ここがズレると、何をやっても空回りします。`,
+      `よくある思い込みは3つ👇\n❌ 量をこなせば報われる\n❌ ノウハウを集めれば解決する\n❌ 自分にはまだ何かが足りない`,
+      `全部、逆。足すのではなく、遠回りをやめる。それだけで景色が変わります。`
     ].join(sep),
-    cta:'常識を否定し、「続きが気になる」状態を作る'
+    cta:'常識を否定し、続きが気になる状態を作る'
   });
 
-  /* ---- 3. 新しい視点・解決の全体像 ---- */
+  /* 3. 解決の全体像 */
   msgs.push({
-    stage:'解決の全体像', role:'“新しい方法”への気づき（アハ体験）を与える', when:'2日後',
+    stage:'解決の全体像', role:'“新しい方法”を3ステップで端的に見せる', when:'2日後',
     subject:pick([
-      `＼${after}までは、たった3ステップでした／`,
-      `なぜ、才能もセンスもない人ほど${after}のか？`,
-      `これを知った瞬間、動き方が180度変わります`
+      `＼${after}まで、たった3ステップ／`,
+      `なぜ、センスがない人ほど${after}のか？`,
+      `9割は、①を飛ばして失敗します`
     ],r),
     body:[
-      `${hi()}`,
-      `前回は「${pain}の本当の正体」をお話ししました。今日はいよいよ、そこから抜け出す“全体像”です。`,
-      `結論から言います。${after}までの道のりは、たった3つのステップに整理できます。`,
-      `① 今の自分を正しく捉える（がむしゃらに動かない）\n② ${product}のような“正しい型”に乗せる\n③ 小さく試して、勝ち筋だけを伸ばす`,
-      `多くの人は①を飛ばして、②③を自己流でやります。だから「${pain}」のループから抜け出せない。でも逆に、この順番さえ守れば、才能もセンスも要らないんです。`,
-      proof? `実際、この順番に切り替えた方から、こんな声が届いています👇\n「${proof}」` : `これは、私が数えきれない遠回りの末に、ようやく辿り着いた“再現性のある型”です。`,
-      `「順番は分かった。でも、私にできるの？」——そう思いましたよね。次回は、それを実際にやり切った人の“変化”を、そのままお見せします。`,
-      `${end()}`
-    ].join(sep),
-    cta:'解決の“型”を提示し、商品(=②)を物語の中に自然に位置づける'
-  });
-
-  /* ---- 4. 証拠・信頼構築 ---- */
-  msgs.push({
-    stage:'証拠と信頼', role:'感動の実例で「私にもできる」を確信に変える', when:'3日後',
-    subject:pick([
-      `＼「私にも、できた…！」——ある${who}が泣いた日／`,
-      `“センスがない”が口ぐせだった人が、こう変わりました`,
-      `なぜ、半信半疑で始めた人ほど結果を出すのか？`
-    ],r),
-    body:[
-      `${hi()}`,
-      `今日は「本当に、自分にもできるの？」——その不安に、“事実”でお答えします。`,
-      proof? `👤 ある${who}の物語です。\n「${proof}」\n\nこの方も、最初は「${pain}」と、うつむいていました。特別なスキルなんて、ありませんでした。違ったのは、たった一つ。“正しい順番でやり切った”こと。それだけです。`
-           : `${product}を実践した${who}の多くが、最初は「${pain}」と悩んでいました。特別な人なんて、一人もいません。違いはただ一つ、“正しい順番でやり切った”か。それだけでした。`,
-      `大切なのは、結果を出した人が「もともとできる人」ではなかったということ。むしろ半信半疑で始めた人ほど、素直に型に乗って、${after}へと近づいていきました。`,
-      `「じゃあ、その型を、どこで手に入れればいいの？」——次回、いよいよ、あなたのためのご案内をします。`,
-      `${end()}`
-    ].join(sep),
-    cta:'第三者の“感動の変化”で自分ごと化させ、招待を予告する'
-  });
-
-  /* ---- 5. 招待予告（個別相談 / オートウェビナー） ---- */
-  msgs.push({
-    stage:'ご招待の予告', role:`直接売らず ${CV.name} への誘導を予告し、期待を高める`, when:'4日後',
-    subject:pick([
-      `＼明日、あなたに“特別なご招待”があります／`,
-      `ここまで読んだあなたにこそ、受け取ってほしいものがある`,
-      `正直に言います。文章だけでは、もう限界なんです`
-    ],r),
-    body:[
-      `${hi()}`,
-      `ここまで読み進めてくれて、本当にありがとうございます。それだけで、あなたの“本気”が伝わってきます。`,
-      `これまで「${after}ための正しい順番」をお伝えしてきました。でも——正直に言うと、文章だけで全部をお渡しするには、限界があるんです。だって、あなたの状況は、あなただけのものだから。`,
-      isConsult
-        ? `そこで明日、あなたの“今”を直接おうかがいして、${after}までの道筋を一緒に描く【${CV.name}】をご案内します。売り込みの場ではありません。あなただけの“次の一手”を、手ぶらで持ち帰ってもらう時間です。`
-        : `そこで明日、${after}ための全体像を丸ごと学べる【${CV.name}】をご案内します。好きな時間に、好きな場所で視聴できる形です。忙しいあなたでも、大丈夫。`,
-      deadline? `しかも今回は、${deadline}という特典もご用意しました。詳しくは、次回。` : `詳しいご案内は、次回お届けします。楽しみに待っていてくださいね。`,
-      `${end()}`
-    ].join(sep),
-    cta:`商品を直接オファーせず、${CV.name} への参加を“予告”して期待を最大化する`
-  });
-
-  /* ---- 6. 招待本体（相談 / ウェビナーへ誘導） ---- */
-  msgs.push({
-    stage:`${CV.name}へのご招待`, role:'商品を直接売らず、次の接点へ誘導する“本命CTA”', when:'5日後',
-    subject:pick([
-      `＼受付開始／【${CV.name}】のご案内です`,
-      isConsult? `${after}までの道筋、一緒に描きませんか？` : `${after}の全体像、まるごと1本に詰めました`,
-      `お待たせしました。${CV.reg}、スタートです`
-    ],r),
-    body:[
-      `${hi()}`,
-      `お待たせしました。【${CV.name}】、正式にご案内します。`,
-      isConsult
-        ? `これは、${who}のあなたの“今”を直接おうかがいして、「${pain}」から抜け出し${after}ための、“あなただけの道筋”を一緒に描く時間です。`
-        : `これは、${who}が「${pain}」から抜け出し${after}ための考え方と手順を、順番に学べるオンライン講座です。好きなタイミングで、何度でも${CV.verb}いただけます。`,
-      isConsult
-        ? `【この時間で、あなたが持ち帰れるもの】\n✔ あなたの現状にぴったりの“次の一手”\n✔ 遠回りを断ち切る、正しい優先順位\n✔ ${after}までの、現実的なステップ`
-        : `【このセミナーで、あなたが手にするもの】\n✔ ${after}ための全体像（①②③の型）\n✔ みんながつまずくポイントと、その回避法\n✔ 今日から動ける、具体的な第一歩`,
-      proof? `すでに一歩を踏み出した方の声👇\n「${proof}」` : ``,
-      isConsult
-        ? `「売り込まれそう…」なんて、身構えないでください。無理な勧誘は一切しません。まずは、話を聞きに来てください。それだけで大丈夫です。`
-        : `参加費は無料。お名前とメールだけで、今すぐ${CV.verb}いただけます。`,
-      `👉 ${CV.cta}：${CV.link}`,
-      `${end()}`
+      `${after}までの道のりは、たった3ステップです。`,
+      `① 今の自分を正しく捉える\n② ${product}のような“正しい型”に乗せる\n③ 小さく試して、勝ち筋だけ伸ばす`,
+      `多くの人は①を飛ばして自己流。だから「${pain}」のループから抜けられません。`,
+      `逆に、この順番さえ守れば、才能もセンスも要らない。`,
+      proof?`実際に切り替えた人の声👇\n「${proof}」`:``
     ].filter(Boolean).join(sep),
-    cta:`本命CTA＝商品購入ではなく ${CV.name} の${CV.reg}へ誘導（${CV.link} を実際のリンクに差し替え）`
+    cta:'解決の“型”を提示し、商品(=②)を自然に置く'
   });
 
-  /* ---- 7. 締切・反論処理・最終CTA ---- */
+  /* 4. 証拠と信頼 */
   msgs.push({
-    stage:'締切と最終後押し', role:`反論処理＋緊急性で ${CV.name} の${CV.reg}を確定させる`, when:'6日後（締切当日）',
+    stage:'証拠と信頼', role:'実例で「私にもできる」を確信させる', when:'3日後',
     subject:pick([
-      deadline? `＼本日締切／【${CV.name}】のご案内は、今夜まで` : `＼最終案内／【${CV.name}】は、今日で一区切り`,
-      `最後に、どうしても伝えたいことがあります`,
-      `“やらない後悔”だけは、してほしくないんです`
+      `＼「私にもできた」——ある${who}の話／`,
+      `“センスがない”が口ぐせだった人の、その後`,
+      `なぜ、半信半疑の人ほど結果を出すのか？`
     ],r),
     body:[
-      `${hi()}`,
-      deadline? `いよいよ${deadline}。【${CV.name}】のご案内は、まもなく終了します。` : `【${CV.name}】のご案内は、今日で一区切りです。`,
-      `迷っているあなたへ。よくいただく“不安”に、正直にお答えします👇`,
-      isConsult
-        ? `Q.「相談したら、売り込まれない？」\n→ しません、約束します。あなたの状況を整理して、次の一手を持ち帰ってもらうための時間です。合わなければ、それで大丈夫。`
-        : `Q.「時間が取れるか、不安…」\n→ 大丈夫です。好きな時間に視聴できるので、スキマ時間で${CV.verb}いただけます。`,
-      `Q.「今じゃなくても、いいかな…」\n→ その“いつか”が来ないことこそ、「${pain}」がずっと続く最大の理由です。関心が高い“今”が、いちばん動きやすいタイミングなんです。`,
-      `${who}が${after}——その姿を、私は本気で見たいと思っています。最後の一歩、【${CV.name}】で一緒に踏み出しましょう。`,
-      `👉 締切前に${CV.reg}する：${CV.link}`,
-      `${end()}`
+      proof?`「${proof}」\n\nこの方も、最初は「${pain}」と悩んでいました。`
+           :`${product}を実践した${who}も、最初はみんな「${pain}」と悩んでいました。`,
+      `特別なスキルは、ありません。違いは1つ。「正しい順番でやり切った」。それだけ。`,
+      `むしろ半信半疑で始めた人ほど、素直に型に乗って${after}へ近づいています。`
     ].join(sep),
-    cta:`商品ではなく ${CV.name} の${CV.reg}を、反論処理＋締切で確定させる。リンク再掲`
+    cta:'第三者の変化で“自分ごと化”させる'
+  });
+
+  /* 5. ご招待の予告 */
+  msgs.push({
+    stage:'ご招待の予告', role:`${CV.name} への期待を短く高める`, when:'4日後',
+    subject:pick([
+      `＼あなたに、特別な“ご招待”があります／`,
+      `文章だけでは、もう限界なんです`,
+      `${after}へ、最後のひと押しを`
+    ],r),
+    body:[
+      `ここまでで「${after}ための順番」は見えてきたはず。`,
+      `でも、文章だけでは限界があります。あなたの状況は、あなただけのものだから。`,
+      isConsult
+        ? `そこで、あなたの“今”に合わせて道筋を一緒に描く場を用意しました。それが【${CV.name}】です。`
+        : `そこで、${after}ための全体像を丸ごと持ち帰れる場を用意しました。それが【${CV.name}】です。`,
+      deadline?`しかも今回は、${deadline}の特典つき。`:``
+    ].filter(Boolean).join(sep),
+    cta:`商品を売らず、${CV.name} への参加を予告して期待を高める`
+  });
+
+  /* 6. 招待本体：参加後のBefore→Afterで誘導 */
+  msgs.push({
+    stage:`${CV.name}へのご招待`, role:'売り込まず、参加後のBefore→Afterで誘導する本命CTA', when:'5日後',
+    subject:pick([
+      `＼${CV.name}／「${pain}」から「${after}」への最短ルート`,
+      isConsult?`${CV.name}に参加すると、こう変わります`:`${CV.name}を観ると、こう変わります`,
+      `${CV.name}、受付を開始しました`
+    ],r),
+    body:[
+      `【${CV.name}】に${CV.verb}すると——`,
+      `「${pain}」だったあなたが、「${after}」へ。その具体的な道筋が、はっきり見えるようになります。`,
+      isConsult
+        ? `ここで手にするもの👇\n✔ あなた専用の“次の一手”\n✔ 遠回りを断つ、正しい優先順位\n✔ ${after}までの現実的なステップ`
+        : `ここで手にするもの👇\n✔ ${after}ための全体像（①②③の型）\n✔ みんながハマる罠と、その回避法\n✔ 今日から動ける第一歩`,
+      proof?`👤 実際の声：「${proof}」`:``,
+      `👉 ${CV.name}に${CV.reg}する：${CV.link}`
+    ].filter(Boolean).join(sep),
+    cta:`本命CTA＝参加後のBefore→Afterを見せて ${CV.name} の${CV.reg}へ（${CV.link}を差し替え）`
+  });
+
+  /* 7. 締切：参加後の未来＋緊急性 */
+  msgs.push({
+    stage:'締切と最終後押し', role:`参加後の未来＋緊急性で ${CV.name} の${CV.reg}を確定`, when:'6日後（締切当日）',
+    subject:pick([
+      deadline?`＼本日締切／ ${CV.name}は今夜まで`:`＼最終案内／ ${CV.name}は今日まで`,
+      `この一歩で、半年後が変わります`,
+      `“やらない後悔”だけは、してほしくない`
+    ],r),
+    body:[
+      deadline?`${deadline}。【${CV.name}】の受付は、まもなく終了します。`:`【${CV.name}】の受付は、今日で終了します。`,
+      `想像してみてください。${CV.name}に${CV.verb}した先を。`,
+      `「${pain}」に振り回されていたあなたが、「${after}」——その毎日を、当たり前に過ごしている。`,
+      `迷っている“今この瞬間”も、「${pain}」は続いています。動くなら、関心が高い今です。`,
+      `👉 締切前に${CV.reg}する：${CV.link}`
+    ].join(sep),
+    cta:`反論処理ではなく“参加後の未来”＋締切で確定させる。リンク再掲`
   });
 
   return msgs;
 }
-const msgsTotal=7;
 
-/* =========================================================
-   RENDER
-========================================================= */
+/* ===== RENDER ===== */
 let lastInput=null, saltCounter=0;
-
 function collect(){
   return {
     product:document.getElementById('i_product').value,
     who:document.getElementById('i_who').value,
-    pain:document.getElementById('i_pain').value,
     after:document.getElementById('i_after').value,
+    pains:document.getElementById('i_pains').value,
     proof:document.getElementById('i_proof').value,
-    offer:document.getElementById('i_offer').value,
     deadline:document.getElementById('i_deadline').value,
-    price:getPrice(), medium:getMedium(), tone:getTone(), goal:getGoal(),
+    goal:getGoal(),
+    cvname:document.getElementById('i_cvname').value,
     _salt:saltCounter
   };
 }
-
 function render(){
   const inp=collect(); lastInput=inp;
   const msgs=build(inp);
@@ -508,8 +424,8 @@ function render(){
     html+=`<div class="msg">
       <div class="top">
         <div class="num">${i+1}</div>
-        <div class="meta"><div class="stage">${m.stage}</div><div class="role">${m.role}</div></div>
-        <div class="when">${m.when}</div>
+        <div class="meta"><div class="stage">${escapeHtml(m.stage)}</div><div class="role">${escapeHtml(m.role)}</div></div>
+        <div class="when">${escapeHtml(m.when)}</div>
       </div>
       <div class="sub"><div class="lbl">件名</div><div class="subline" contenteditable="true">${escapeHtml(m.subject)}</div></div>
       <div class="content"><div class="lbl">本文</div><div class="txt" contenteditable="true">${escapeHtml(m.body)}</div></div>
@@ -519,7 +435,6 @@ function render(){
   });
   box.innerHTML=html;
   box.scrollIntoView({behavior:'smooth',block:'start'});
-
   document.getElementById('regen').onclick=()=>{saltCounter++;render();};
   document.getElementById('copyAll').onclick=()=>copyText(fullText(msgs),'全7通をコピーしました');
   document.getElementById('dl').onclick=()=>download(msgs);
@@ -528,7 +443,6 @@ function render(){
     copyText(`■件名：${m.subject}\n\n${m.body}`,`${(+b.dataset.i)+1}通目をコピーしました`);
   });
 }
-
 function fullText(msgs){
   let out=`【たった7通で売れる リスト成約シナリオ】\nProduced by Fun&holic Inc.\n\n`;
   msgs.forEach((m,i)=>{
@@ -540,7 +454,7 @@ function download(msgs){
   const blob=new Blob([fullText(msgs)],{type:'text/plain;charset=utf-8'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download='7通シナリオ_'+(lastInput.product||'step7').replace(/[\\/:*?"<>|]/g,'')+'.txt';
+  a.download='7通シナリオ_'+((lastInput.product||'step7').replace(/[\\/:*?"<>|]/g,''))+'.txt';
   a.click(); URL.revokeObjectURL(a.href);
   toast('テキストで保存しました');
 }
@@ -550,7 +464,7 @@ let toastTimer;
 function toast(m){const el=document.getElementById('toast');el.textContent=m;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),1900);}
 
 document.getElementById('go').addEventListener('click',()=>{
-  const req=[['i_product','商品・サービス名'],['i_who','ターゲット'],['i_pain','悩み'],['i_after','提供する変化']];
+  const req=[['i_product','商品・サービス名'],['i_who','ターゲット'],['i_after','理想の未来'],['i_pains','悩み'],['i_cvname','誘導先の名前']];
   const missing=req.filter(([id])=>!document.getElementById(id).value.trim());
   if(missing.length){ toast('★の必須項目を入力してください（'+missing.map(m=>m[1]).join('・')+'）');
     document.getElementById(missing[0][0]).focus(); return; }
