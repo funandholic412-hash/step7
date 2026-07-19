@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>たった7通で売れる リスト成約シナリオ設計AI</title>
+<meta name="description" content="登録者を『欲しい』に変える7通のステップ配信シナリオを自動設計。商品情報を入れるだけで、件名・本文・CTAまで一気に生成します。">
+<style>
+  :root{
+    --bg:#0f1020; --panel:#171933; --panel2:#1e2143; --line:#2c2f57;
+    --ink:#eef0ff; --sub:#a6a9d6; --mut:#7b7fb0;
+    --accent:#7c5cff; --accent2:#00d4b3; --accent3:#ff5c8a;
+    --ok:#3ddc97; --warn:#ffcf5c;
+    --radius:16px; --shadow:0 18px 50px rgba(0,0,0,.45);
+    --grad:linear-gradient(135deg,#7c5cff 0%,#5b8bff 50%,#00d4b3 100%);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic",Meiryo,sans-serif;
+    background:radial-gradient(1200px 700px at 80% -10%,rgba(124,92,255,.18),transparent 60%),
+               radial-gradient(1000px 600px at -10% 10%,rgba(0,212,179,.12),transparent 55%),
+               var(--bg);
+    color:var(--ink); line-height:1.75; -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:26px 18px 80px}
+  a{color:var(--accent2)}
+  .brandbar{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--sub);margin-bottom:18px}
+  .brandbar .dot{width:9px;height:9px;border-radius:50%;background:var(--grad)}
+
+  /* ===== Gate ===== */
+  #gate{max-width:440px;margin:8vh auto;background:var(--panel);border:1px solid var(--line);
+    border-radius:20px;padding:34px 28px;box-shadow:var(--shadow);text-align:center}
+  #gate .lock{font-size:34px;margin-bottom:6px}
+  #gate h1{font-size:20px;margin:6px 0 4px;letter-spacing:.02em}
+  #gate p{color:var(--sub);font-size:13.5px;margin:0 0 20px}
+  #gate input{width:100%;padding:14px 16px;font-size:16px;text-align:center;letter-spacing:.35em;
+    background:var(--panel2);border:1px solid var(--line);border-radius:12px;color:var(--ink);outline:none}
+  #gate input:focus{border-color:var(--accent)}
+  #gate button{margin-top:14px;width:100%;padding:14px;font-size:15px;font-weight:700;border:0;border-radius:12px;
+    background:var(--grad);color:#fff;cursor:pointer;letter-spacing:.05em}
+  #gate .err{color:var(--accent3);font-size:13px;height:18px;margin-top:10px}
+
+  /* ===== App ===== */
+  #app{display:none}
+  .hero{background:linear-gradient(180deg,rgba(124,92,255,.14),rgba(124,92,255,0));
+    border:1px solid var(--line);border-radius:var(--radius);padding:26px 24px;margin-bottom:22px}
+  .hero .kicker{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.14em;color:#fff;
+    background:var(--grad);padding:5px 12px;border-radius:999px;margin-bottom:12px}
+  .hero h1{font-size:26px;line-height:1.4;margin:2px 0 8px;letter-spacing:.01em}
+  .hero h1 .u{background:linear-gradient(transparent 62%,rgba(0,212,179,.35) 62%)}
+  .hero p{color:var(--sub);margin:0;font-size:14.5px}
+
+  details.how{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-bottom:22px;overflow:hidden}
+  details.how>summary{cursor:pointer;padding:15px 18px;font-weight:700;font-size:14.5px;list-style:none;display:flex;align-items:center;gap:8px}
+  details.how>summary::-webkit-details-marker{display:none}
+  details.how>summary .chev{margin-left:auto;transition:.2s;color:var(--mut)}
+  details.how[open]>summary .chev{transform:rotate(180deg)}
+  details.how .body{padding:2px 18px 18px;color:var(--sub);font-size:14px}
+  details.how ol{margin:6px 0;padding-left:20px}
+  details.how li{margin:6px 0}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px 22px 24px;margin-bottom:22px;box-shadow:var(--shadow)}
+  .card h2{font-size:17px;margin:0 0 4px;display:flex;align-items:center;gap:9px}
+  .card h2 .n{width:26px;height:26px;flex:none;border-radius:8px;background:var(--grad);color:#fff;font-size:13px;
+    display:grid;place-items:center;font-weight:800}
+  .card .hint{color:var(--mut);font-size:12.5px;margin:0 0 16px}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:640px){.grid{grid-template-columns:1fr}}
+  .field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px;color:var(--ink)}
+  .field label .req{color:var(--accent3);font-size:11px;margin-left:4px}
+  .field label .opt{color:var(--mut);font-size:11px;margin-left:4px;font-weight:500}
+  .field .ex{color:var(--mut);font-size:11.5px;font-weight:400;margin-left:4px}
+  input[type=text],textarea,select{width:100%;padding:11px 13px;font-size:14px;background:var(--panel2);
+    border:1px solid var(--line);border-radius:10px;color:var(--ink);outline:none;font-family:inherit;resize:vertical}
+  input[type=text]:focus,textarea:focus,select:focus{border-color:var(--accent)}
+  textarea{min-height:64px}
+  .full{grid-column:1 / -1}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
+  .chip{flex:1;min-width:calc(33% - 8px);text-align:center;padding:10px 8px;font-size:13px;border:1px solid var(--line);
+    border-radius:10px;background:var(--panel2);color:var(--sub);cursor:pointer;user-select:none;transition:.12s}
+  .chip:hover{border-color:var(--accent)}
+  .chip.on{background:var(--grad);color:#fff;border-color:transparent;font-weight:700}
+
+  .go{width:100%;margin-top:20px;padding:16px;font-size:16px;font-weight:800;letter-spacing:.05em;border:0;border-radius:13px;
+    background:var(--grad);color:#fff;cursor:pointer;box-shadow:0 10px 26px rgba(124,92,255,.4)}
+  .go:active{transform:translateY(1px)}
+  .go[disabled]{opacity:.5;cursor:not-allowed;box-shadow:none}
+
+  /* ===== Results ===== */
+  #results{margin-top:8px}
+  .resbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0 18px}
+  .resbar h2{font-size:18px;margin:0;flex:1 1 auto}
+  .btn{padding:10px 15px;font-size:13px;font-weight:700;border:1px solid var(--line);border-radius:10px;
+    background:var(--panel2);color:var(--ink);cursor:pointer}
+  .btn:hover{border-color:var(--accent)}
+  .btn.primary{background:var(--grad);border-color:transparent;color:#fff}
+
+  .msg{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-bottom:16px;overflow:hidden}
+  .msg .top{display:flex;align-items:center;gap:11px;padding:14px 16px;border-bottom:1px solid var(--line);
+    background:linear-gradient(90deg,rgba(124,92,255,.10),transparent)}
+  .msg .top .num{width:30px;height:30px;flex:none;border-radius:9px;background:var(--grad);color:#fff;font-weight:800;
+    display:grid;place-items:center;font-size:14px}
+  .msg .top .meta{flex:1;min-width:0}
+  .msg .top .stage{font-size:14.5px;font-weight:800;letter-spacing:.01em}
+  .msg .top .role{font-size:11.5px;color:var(--mut)}
+  .msg .top .when{font-size:11px;color:var(--sub);background:var(--panel2);border:1px solid var(--line);
+    padding:4px 9px;border-radius:999px;white-space:nowrap}
+  .msg .sub{padding:12px 16px 4px}
+  .msg .sub .lbl,.msg .content .lbl{font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--accent2);text-transform:uppercase;margin-bottom:5px}
+  .msg .sub .subline{font-size:15px;font-weight:700;line-height:1.5}
+  .msg .content{padding:10px 16px 6px}
+  .msg .content .txt{white-space:pre-wrap;font-size:14px;color:#dfe2ff;line-height:1.85}
+  .msg .cta{margin:10px 16px 0;padding:11px 14px;background:rgba(0,212,179,.10);border:1px dashed rgba(0,212,179,.5);
+    border-radius:10px;font-size:13.5px}
+  .msg .cta b{color:var(--accent2)}
+  .msg .actions{display:flex;gap:8px;padding:14px 16px 16px}
+  .msg .actions .btn{font-size:12.5px;padding:8px 12px}
+
+  .foot{margin-top:34px;text-align:center;color:var(--mut);font-size:12.5px;line-height:1.9}
+  .foot .credit{color:var(--sub);font-weight:700}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(30px);opacity:0;
+    background:#0c0d1c;border:1px solid var(--accent);color:#fff;padding:11px 20px;border-radius:12px;font-size:13.5px;
+    box-shadow:var(--shadow);transition:.25s;z-index:50;pointer-events:none}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ GATE ============ -->
+  <div id="gate">
+    <div class="lock">🔒</div>
+    <h1>たった7通で売れる<br>リスト成約シナリオ設計AI</h1>
+    <p>この特典ツールは合言葉が必要です。<br>受け取った合言葉を入力してください。</p>
+    <input id="pass" type="text" inputmode="text" autocomplete="off" placeholder="合言葉" autofocus>
+    <button id="passBtn">ロックを解除する</button>
+    <div class="err" id="passErr"></div>
+  </div>
+
+  <!-- ============ APP ============ -->
+  <div id="app">
+    <div class="brandbar"><span class="dot"></span> リスト成約シナリオ設計AI &nbsp;/&nbsp; Produced by 株式会社Fun&amp;holic</div>
+
+    <div class="hero">
+      <span class="kicker">STEP DELIVERY SCENARIO</span>
+      <h1>登録者を<span class="u">「欲しい」</span>に変える、<br>たった7通のステップ配信。</h1>
+      <p>商品情報を入れるだけ。件名・本文・CTAまで、成約に向かう7通のシナリオを自動で設計します。LINEでもメルマガでもそのまま使えます。</p>
+    </div>
+
+    <details class="how">
+      <summary>📖 使い方（30秒） <span class="chev">▾</span></summary>
+      <div class="body">
+        <ol>
+          <li><b>下のフォームに商品情報を入力</b>します（★は必須。多く埋めるほど精度が上がります）。</li>
+          <li><b>「7通のシナリオを生成する」</b>を押すと、1通目〜7通目が一気に出ます。</li>
+          <li>各通は<b>件名・本文・CTA</b>入り。そのままコピーしてLINE公式／メルマガに貼るだけ。文章は自由に編集できます。</li>
+        </ol>
+        <p style="margin:10px 0 0">💡 このツールは<b>ブラウザ内だけで完結</b>します（入力内容はどこにも送信されません／APIキー不要）。「再生成」で切り口違いのパターンも作れます。</p>
+      </div>
+    </details>
+
+    <!-- INPUT -->
+    <div class="card">
+      <h2><span class="n">✎</span>あなたの商品を教えてください</h2>
+      <p class="hint">★＝必須。空欄でも動きますが、埋めるほどシナリオが具体的になります。</p>
+      <div class="grid">
+        <div class="field full">
+          <label>商品・サービス名<span class="req">★</span> <span class="ex">例：ゼロから始めるInstagram収益化講座</span></label>
+          <input type="text" id="i_product" placeholder="あなたが売りたい商品・サービスの名前">
+        </div>
+        <div class="field">
+          <label>ターゲットは誰？<span class="req">★</span> <span class="ex">例：副業したい会社員</span></label>
+          <input type="text" id="i_who" placeholder="どんな人に届けたいか">
+        </div>
+        <div class="field">
+          <label>その人の悩み・今の状態<span class="req">★</span> <span class="ex">例：発信しても反応がない</span></label>
+          <input type="text" id="i_pain" placeholder="ターゲットが抱える悩み・現状">
+        </div>
+        <div class="field full">
+          <label>提供する変化・理想の未来<span class="req">★</span> <span class="ex">例：好きな発信で月10万円を安定して稼げる</span></label>
+          <input type="text" id="i_after" placeholder="この商品で手に入る Before→After">
+        </div>
+        <div class="field">
+          <label>実績・お客様の声 <span class="opt">任意</span> <span class="ex">例：受講生120名／3ヶ月で月商50万達成</span></label>
+          <textarea id="i_proof" placeholder="数字・体験談・権威づけがあれば"></textarea>
+        </div>
+        <div class="field">
+          <label>商品の中身・特典 <span class="opt">任意</span> <span class="ex">例：動画12本＋個別添削3回＋テンプレ集</span></label>
+          <textarea id="i_offer" placeholder="オファーに含まれるもの"></textarea>
+        </div>
+        <div class="field full">
+          <label>締切・限定条件 <span class="opt">任意</span> <span class="ex">例：今週日曜24時まで／先着10名は半額</span></label>
+          <input type="text" id="i_deadline" placeholder="緊急性を作る条件（あれば）">
+        </div>
+
+        <div class="field">
+          <label>価格帯<span class="req">★</span></label>
+          <div class="chips" id="price">
+            <div class="chip" data-v="free">無料〜3千円</div>
+            <div class="chip" data-v="low">〜1万円</div>
+            <div class="chip on" data-v="mid">1〜5万円</div>
+            <div class="chip" data-v="high">5〜30万円</div>
+            <div class="chip" data-v="premium">30万円〜</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>配信媒体<span class="req">★</span></label>
+          <div class="chips" id="medium">
+            <div class="chip on" data-v="line">LINE公式</div>
+            <div class="chip" data-v="mail">メルマガ</div>
+          </div>
+        </div>
+        <div class="field full">
+          <label>トーン<span class="req">★</span></label>
+          <div class="chips" id="tone">
+            <div class="chip on" data-v="friendly">親しみ・共感</div>
+            <div class="chip" data-v="authority">権威・専門</div>
+            <div class="chip" data-v="passion">情熱・熱量</div>
+          </div>
+        </div>
+      </div>
+      <button class="go" id="go">🚀 7通のシナリオを生成する</button>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="results"></div>
+
+    <div class="foot">
+      <div class="credit">Produced by 株式会社Fun&amp;holic</div>
+      <div>たった7通で売れる リスト成約シナリオ設計AI</div>
+    </div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   GATE
+========================================================= */
+const PASSCODE = "step7";
+const gate=document.getElementById('gate'), app=document.getElementById('app');
+function tryPass(){
+  const v=document.getElementById('pass').value.trim().toLowerCase();
+  if(v===PASSCODE){ gate.style.display='none'; app.style.display='block'; window.scrollTo(0,0); }
+  else { document.getElementById('passErr').textContent='合言葉が違います。もう一度お試しください。'; }
+}
+document.getElementById('passBtn').addEventListener('click',tryPass);
+document.getElementById('pass').addEventListener('keydown',e=>{if(e.key==='Enter')tryPass();});
+
+/* =========================================================
+   CHIP SELECTORS
+========================================================= */
+function chipGroup(id){
+  const box=document.getElementById(id);
+  box.addEventListener('click',e=>{
+    const c=e.target.closest('.chip'); if(!c)return;
+    box.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+    c.classList.add('on');
+  });
+  return ()=>box.querySelector('.chip.on').dataset.v;
+}
+const getPrice=chipGroup('price'), getMedium=chipGroup('medium'), getTone=chipGroup('tone');
+
+/* =========================================================
+   ENGINE  — deterministic-with-variation generator
+========================================================= */
+function seedFrom(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+function rng(seed){let s=seed>>>0;return()=>{s^=s<<13;s^=s>>>17;s^=s<<5;s>>>=0;return s/4294967296;};}
+function pick(arr,r){return arr[Math.floor(r()*arr.length)];}
+
+function esc(v,fb){v=(v||'').trim();return v?v:fb;}
+
+// tone-flavored sentence endings / openers
+const TONE={
+  friendly:{hi:['こんにちは！','お疲れさまです😊','こんにちは、○○です。'],warm:'（いつも読んでくれて本当にありがとうございます）',end:['よかったら、ぜひ読んでみてくださいね。','一緒にやっていきましょう😊','今日も応援しています！']},
+  authority:{hi:['こんにちは。','いつもご覧いただきありがとうございます。','○○です。'],warm:'（今日は少し踏み込んだ話をします）',end:['ぜひ本質を掴んでください。','事実として知っておいてください。','今日の内容は、必ず役に立ちます。']},
+  passion:{hi:['お疲れさまです！','今日はどうしても伝えたいことがあります。','○○です、正直に書きます。'],warm:'（熱くなってしまったらすみません）',end:['本気なら、絶対に読んでください。','あなたの人生、ここから変えていきましょう。','受け取ってください、全力で書きました。']}
+};
+const PRICE={
+  free:{trust:1,urg:2,label:'無料〜3千円'}, low:{trust:1,urg:3,label:'1万円以下'},
+  mid:{trust:2,urg:3,label:'1〜5万円'}, high:{trust:3,urg:3,label:'5〜30万円'}, premium:{trust:4,urg:2,label:'30万円以上'}
+};
+
+function br(medium,strong){ // line spacing style
+  return medium==='line' ? '\n\n' : (strong?'\n\n':'\n');
+}
+
+function build(inp){
+  const r=rng(seedFrom(JSON.stringify(inp)+'|'+inp._salt));
+  const t=TONE[inp.tone], p=PRICE[inp.price];
+  const product=esc(inp.product,'この商品');
+  const who=esc(inp.who,'あなた');
+  const pain=esc(inp.pain,'思うような結果が出ていない');
+  const after=esc(inp.after,'理想の成果を手に入れる');
+  const proof=(inp.proof||'').trim();
+  const offer=(inp.offer||'').trim();
+  const deadline=(inp.deadline||'').trim();
+  const L=inp.medium==='line';
+  const sep=L?'\n\n':'\n\n';
+
+  const hi=()=>pick(t.hi,r).replace('○○','（あなたの名前）');
+  const end=()=>pick(t.end,r);
+
+  const msgs=[];
+
+  /* ---- 1. 歓迎＋共感ストーリー ---- */
+  msgs.push({
+    stage:'共感と歓迎', role:'関係を作る・続きを読ませる', when:'登録直後（0日目）',
+    subject:pick([
+      `【はじめまして】${who}のあなたへ、最初にお伝えしたいこと`,
+      `登録ありがとうございます。まず、これだけは言わせてください`,
+      `${pain}——その気持ち、痛いほど分かります`
+    ],r),
+    body:[
+      `${hi()}`,
+      `このたびは受け取ってくださって、本当にありがとうございます。${t.warm}`,
+      `いきなりですが——「${pain}」。もしあなたが今そう感じているなら、この配信はきっと役に立ちます。`,
+      `実は私自身、かつては全く同じ場所で立ち止まっていました。何をやっても${pain}状態で、正直「自分には向いていないのかも」とまで思っていたんです。`,
+      `でも、ある“考え方”に出会ってから景色が変わりました。${who}が${after}——それは特別な才能ではなく、正しい順番を知っているかどうかだけの差だった、ということです。`,
+      `これから全${msgsTotal}通にわたって、その順番を一つずつお渡ししていきます。次回は「${pain}の“本当の原因”」の話。ここを外すと何をやっても空回りします。`,
+      `${end()}`
+    ].join(sep),
+    cta:'次回予告で“開封の理由”を作る（このメールは登録直後に自動送信）'
+  });
+
+  /* ---- 2. 問題の再定義・誤解を壊す ---- */
+  msgs.push({
+    stage:'問題の再定義', role:'「今までの努力が報われない理由」を提示', when:'1日後',
+    subject:pick([
+      `なぜ${who}は${pain}のか？（努力の問題ではありません）`,
+      `${pain}人がやりがちな、たった1つの勘違い`,
+      `ほとんどの人が“逆”をやっています`
+    ],r),
+    body:[
+      `${hi()}`,
+      `今日は少し耳の痛い話かもしれません。でも、ここが一番大事なので正直に書きます。`,
+      `${who}が${pain}——その原因は「努力不足」ではありません。多くの場合、原因は“やる順番”と“前提”がズレていることです。`,
+      `よくある勘違いはこれです👇`,
+      `❌ とにかく量をこなせば結果が出る\n❌ ノウハウをもっと集めれば解決する\n❌ 自分にはまだ“何か”が足りない`,
+      `違います。足りないものを足すのではなく、遠回りをやめること。実際、${after}人たちは“やらないこと”を先に決めていました。`,
+      `次回は、その具体的な「新しい進め方」の全体像をお見せします。ここが分かると、今日から動き方が変わります。`,
+      `${end()}`
+    ].join(sep),
+    cta:'常識を否定して“続きが気になる”状態を作る'
+  });
+
+  /* ---- 3. 新しい視点・解決の全体像 ---- */
+  msgs.push({
+    stage:'解決の全体像', role:'“新しい方法”への気づきを与える', when:'2日後',
+    subject:pick([
+      `${after}ための「たった3ステップ」`,
+      `${pain}を抜け出す、いちばん近い道`,
+      `これを知っているかどうかで、9割が決まります`
+    ],r),
+    body:[
+      `${hi()}`,
+      `前回は「${pain}の本当の原因」をお話ししました。今日はいよいよ、抜け出すための“全体像”です。`,
+      `結論から言うと、${after}までの道のりは、たった3つのステップに整理できます。`,
+      `① 今の状態を正しく捉える（がむしゃらに動かない）\n② ${product}のような“正しい型”に乗せる\n③ 小さく試して、勝ち筋だけを伸ばす`,
+      `多くの人は①を飛ばして②③を自己流でやるから、${pain}のループにハマります。逆に、この順番さえ守れば、才能もセンスも要りません。`,
+      proof? `実際、この進め方に切り替えた方からはこんな声が届いています：\n「${proof}」` : `この順番は、私が遠回りの末にようやく辿り着いた“再現性のある型”です。`,
+      `とはいえ「順番は分かったけど、自分にできるの？」と思いますよね。次回は、それを実際にやり切った具体例をお見せします。`,
+      `${end()}`
+    ].join(sep),
+    cta:'解決策の“型”を提示し、商品(=②)を自然に位置づける'
+  });
+
+  /* ---- 4. 証拠・信頼構築 ---- */
+  msgs.push({
+    stage:'証拠と信頼', role:'「自分にもできそう」を確信に変える', when:'3日後',
+    subject:pick([
+      `${who}でも、ここまで変われます（実例）`,
+      `“センスがない”と言っていた人が結果を出した話`,
+      `半信半疑だった人ほど、変わっていきます`
+    ],r),
+    body:[
+      `${hi()}`,
+      `今日は「本当に自分にもできるの？」という不安に、事実でお答えします。`,
+      proof? `👤 ある${who}のケース：\n${proof}\n\n最初は「${pain}」と悩んでいた方です。特別なスキルがあったわけではありません。違いは“順番通りにやり切った”こと、それだけです。`
+           : `${product}を実践した${who}の多くが、最初は「${pain}」と悩んでいました。特別な人ではありません。違いは“正しい順番でやり切った”か、それだけでした。`,
+      `ここで大事なのは、うまくいった人が「もともとできる人」ではなかったということ。むしろ半信半疑で始めた人ほど、素直に型に乗って${after}へ近づいています。`,
+      `「じゃあ、その型をどこで手に入れればいいの？」——次回、いよいよその話をします。あなたのための具体的な方法をご案内します。`,
+      `${end()}`
+    ].join(sep),
+    cta:'第三者の変化で“自分ごと化”させ、オファーを予告する'
+  });
+
+  /* ---- 5. オファー予告・価値の先出し ---- */
+  msgs.push({
+    stage:'オファー予告', role:'“なぜ今か”と“何が手に入るか”を先に伝える', when:'4日後',
+    subject:pick([
+      `【予告】${after}ための方法を、まとめてお渡しします`,
+      `明日、大事なお知らせがあります`,
+      `ここまで読んだあなたにこそ、届けたいものがあります`
+    ],r),
+    body:[
+      `${hi()}`,
+      `ここまで5通、読み進めてくれて本当にありがとうございます。それだけで、あなたが本気だと分かります。`,
+      `これまでお伝えしてきた「${after}ための正しい順番」——それを、独学の遠回りなしで最短で実践できるようにまとめたのが「${product}」です。`,
+      offer? `中身はこんな内容です👇\n${offer}` : `${who}が迷わず①②③を進められるよう、必要なものを一式そろえました。`,
+      `なぜ“今”お伝えするのか。それは、ここまで読んでくれたあなたが、一番いいタイミングにいるからです。関心が高まっている今動くのと、忘れた頃に動くのとでは、結果がまるで変わります。`,
+      deadline? `そして今回は、${deadline}という特別なご案内を予定しています。詳細は次回。` : `詳しいご案内は次回お送りします。`,
+      `${end()}`
+    ].join(sep),
+    cta:'商品を初めて明示。緊急性の“理由”を仕込む'
+  });
+
+  /* ---- 6. オファー本体 ---- */
+  msgs.push({
+    stage:'オファー', role:'商品・価格の見せ方・特典・保証で決断を後押し', when:'5日後',
+    subject:pick([
+      `【ご案内】${product}、受付を開始しました`,
+      `${after}への最短ルート、こちらです`,
+      `お待たせしました。今日から受け取れます`
+    ],r),
+    body:[
+      `${hi()}`,
+      `お待たせしました。「${product}」を正式にご案内します。`,
+      `これは、${who}が「${pain}」から抜け出し、${after}ための${p.label==='無料〜3千円'?'入口':'プログラム'}です。`,
+      offer? `【手に入るもの】\n${offer}` : `【手に入るもの】\n・${after}ための正しい順番（①②③の型）\n・迷ったときに立ち返れる手順\n・実践をやり切るためのサポート`,
+      p.trust>=3? `正直、価格以上の価値があると自負しています。それでも「自分にできるか不安」という方のために、安心して踏み出せる形（サポート／保証）もご用意しました。リスクはこちらで引き受けます。`
+               : `${who}が“今日から動ける”ことだけを考えて設計しました。難しい前提知識は要りません。`,
+      proof? `すでに実践した方の声：「${proof}」` : ``,
+      deadline? `⚠️ 今回のご案内は${deadline}。ここを過ぎると同じ条件では受け取れません。` : `迷っている時間も、${pain}が続く時間です。まず一歩、踏み出してみてください。`,
+      `👉 詳細を見て受け取る：${'{リンクをここに}'}`,
+      `${end()}`
+    ].filter(Boolean).join(sep),
+    cta:'ここが本命。ボタン/リンクを明確に置く（{リンクをここに}を差し替え）'
+  });
+
+  /* ---- 7. 締切・反論処理・最終CTA ---- */
+  msgs.push({
+    stage:'締切と最終後押し', role:'反論処理＋緊急性でクロージング', when:'6日後（締切当日）',
+    subject:pick([
+      deadline? `【本日締切】${product}、まもなく受付終了です` : `【最終案内】${product}のご案内は今日までです`,
+      `最後にもう一度だけ、あなたに伝えたいこと`,
+      `“やらない後悔”だけはしてほしくないから`
+    ],r),
+    body:[
+      `${hi()}`,
+      deadline? `いよいよ${deadline}。「${product}」のご案内は、まもなく終了します。` : `「${product}」のご案内は、今日で一区切りです。`,
+      `迷っている方のために、よくいただく不安に正直にお答えします👇`,
+      `Q.「自分にできるか不安」\n→ 大丈夫です。順番通りに進めるだけなので、${who}のための設計になっています。むしろ不安な人ほど型に乗ると伸びます。`,
+      `Q.「今じゃなくてもいい？」\n→ その“いつか”が来ないのが、${pain}が続く最大の理由です。関心が高い今こそ、一番動きやすいタイミングです。`,
+      p.trust>=3? `Q.「価格に見合う？」\n→ ${after}を独学で手探りする時間と遠回りを考えれば、むしろ近道です。だから安心のサポート/保証も付けています。` : `Q.「本当に無理なく続けられる？」\n→ 最小の一歩から始められるよう作りました。`,
+      `${who}が${after}姿を、私は本気で見たいと思っています。最後の一歩を、一緒に踏み出しましょう。`,
+      `👉 締切前に受け取る：${'{リンクをここに}'}`,
+      `${end()}`
+    ].join(sep),
+    cta:'反論をつぶし、締切で背中を押す。リンクを再掲'
+  });
+
+  return msgs;
+}
+const msgsTotal=7;
+
+/* =========================================================
+   RENDER
+========================================================= */
+let lastInput=null, saltCounter=0;
+
+function collect(){
+  return {
+    product:document.getElementById('i_product').value,
+    who:document.getElementById('i_who').value,
+    pain:document.getElementById('i_pain').value,
+    after:document.getElementById('i_after').value,
+    proof:document.getElementById('i_proof').value,
+    offer:document.getElementById('i_offer').value,
+    deadline:document.getElementById('i_deadline').value,
+    price:getPrice(), medium:getMedium(), tone:getTone(),
+    _salt:saltCounter
+  };
+}
+
+function render(){
+  const inp=collect(); lastInput=inp;
+  const msgs=build(inp);
+  const box=document.getElementById('results');
+  let html=`<div class="resbar">
+      <h2>✅ あなたの7通シナリオ</h2>
+      <button class="btn" id="regen">🔄 別パターンで再生成</button>
+      <button class="btn" id="copyAll">📋 全文コピー</button>
+      <button class="btn primary" id="dl">⬇ テキスト保存</button>
+    </div>`;
+  msgs.forEach((m,i)=>{
+    html+=`<div class="msg">
+      <div class="top">
+        <div class="num">${i+1}</div>
+        <div class="meta"><div class="stage">${m.stage}</div><div class="role">${m.role}</div></div>
+        <div class="when">${m.when}</div>
+      </div>
+      <div class="sub"><div class="lbl">件名</div><div class="subline" contenteditable="true">${escapeHtml(m.subject)}</div></div>
+      <div class="content"><div class="lbl">本文</div><div class="txt" contenteditable="true">${escapeHtml(m.body)}</div></div>
+      <div class="cta"><b>設計意図：</b>${escapeHtml(m.cta)}</div>
+      <div class="actions"><button class="btn copy1" data-i="${i}">📋 この通をコピー</button></div>
+    </div>`;
+  });
+  box.innerHTML=html;
+  box.scrollIntoView({behavior:'smooth',block:'start'});
+
+  document.getElementById('regen').onclick=()=>{saltCounter++;render();};
+  document.getElementById('copyAll').onclick=()=>copyText(fullText(msgs),'全7通をコピーしました');
+  document.getElementById('dl').onclick=()=>download(msgs);
+  box.querySelectorAll('.copy1').forEach(b=>b.onclick=()=>{
+    const m=msgs[+b.dataset.i];
+    copyText(`■件名：${m.subject}\n\n${m.body}`,`${(+b.dataset.i)+1}通目をコピーしました`);
+  });
+}
+
+function fullText(msgs){
+  let out=`【たった7通で売れる リスト成約シナリオ】\nProduced by 株式会社Fun&holic\n\n`;
+  msgs.forEach((m,i)=>{
+    out+=`━━━━━━━━━━━━━━━━━━\n${i+1}通目：${m.stage}（${m.when}）\n設計意図：${m.role}\n━━━━━━━━━━━━━━━━━━\n\n■件名\n${m.subject}\n\n■本文\n${m.body}\n\n\n`;
+  });
+  return out;
+}
+function download(msgs){
+  const blob=new Blob([fullText(msgs)],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='7通シナリオ_'+(lastInput.product||'step7').replace(/[\\/:*?"<>|]/g,'')+'.txt';
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('テキストで保存しました');
+}
+function escapeHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function copyText(txt,msg){navigator.clipboard.writeText(txt).then(()=>toast(msg||'コピーしました')).catch(()=>toast('コピーできませんでした'));}
+let toastTimer;
+function toast(m){const el=document.getElementById('toast');el.textContent=m;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),1900);}
+
+document.getElementById('go').addEventListener('click',()=>{
+  const req=[['i_product','商品・サービス名'],['i_who','ターゲット'],['i_pain','悩み'],['i_after','提供する変化']];
+  const missing=req.filter(([id])=>!document.getElementById(id).value.trim());
+  if(missing.length){ toast('★の必須項目を入力してください（'+missing.map(m=>m[1]).join('・')+'）');
+    document.getElementById(missing[0][0]).focus(); return; }
+  saltCounter=0; render();
+});
+</script>
+</body>
+</html>
