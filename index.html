@@ -148,7 +148,7 @@
     <div class="hero">
       <span class="kicker">STEP DELIVERY SCENARIO</span>
       <h1>登録者を<span class="u">「欲しい」</span>に変える、<br>たった7通のステップ配信。</h1>
-      <p>商品情報を入れるだけ。件名・本文・CTAまで、成約に向かう7通のシナリオを自動で設計します。LINEでもメルマガでもそのまま使えます。</p>
+      <p>商品情報を入れるだけ。7通目でいきなり売り込まず、<b>個別相談 or オートウェビナーへ自然に誘導</b>する動線を、件名・本文・CTAまで自動で設計します。LINEでもメルマガでもそのまま使えます。</p>
     </div>
 
     <details class="how">
@@ -214,12 +214,19 @@
             <div class="chip" data-v="mail">メルマガ</div>
           </div>
         </div>
-        <div class="field full">
+        <div class="field">
           <label>トーン<span class="req">★</span></label>
           <div class="chips" id="tone">
             <div class="chip on" data-v="friendly">親しみ・共感</div>
             <div class="chip" data-v="authority">権威・専門</div>
             <div class="chip" data-v="passion">情熱・熱量</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>誘導ゴール<span class="req">★</span> <span class="ex">7通目で売り込まず、ここへ誘導</span></label>
+          <div class="chips" id="goal">
+            <div class="chip on" data-v="consult">個別相談へ誘導</div>
+            <div class="chip" data-v="webinar">オートウェビナーへ誘導</div>
           </div>
         </div>
       </div>
@@ -264,7 +271,7 @@ function chipGroup(id){
   });
   return ()=>box.querySelector('.chip.on').dataset.v;
 }
-const getPrice=chipGroup('price'), getMedium=chipGroup('medium'), getTone=chipGroup('tone');
+const getPrice=chipGroup('price'), getMedium=chipGroup('medium'), getTone=chipGroup('tone'), getGoal=chipGroup('goal');
 
 /* =========================================================
    ENGINE  — deterministic-with-variation generator
@@ -302,6 +309,10 @@ function build(inp){
   const deadline=(inp.deadline||'').trim();
   const L=inp.medium==='line';
   const sep=L?'\n\n':'\n\n';
+  const isConsult=(inp.goal||'consult')==='consult';
+  const CV=isConsult
+    ? {name:'無料個別相談', cta:'個別相談に申し込む', link:'{予約リンクをここに}', reg:'予約', verb:'お話し'}
+    : {name:'無料オンラインセミナー', cta:'セミナーを視聴予約する', link:'{視聴予約リンクをここに}', reg:'視聴予約', verb:'ご視聴'};
 
   const hi=()=>pick(t.hi,r).replace('○○','（あなたの名前）');
   const end=()=>pick(t.end,r);
@@ -390,69 +401,75 @@ function build(inp){
     cta:'第三者の変化で“自分ごと化”させ、オファーを予告する'
   });
 
-  /* ---- 5. オファー予告・価値の先出し ---- */
+  /* ---- 5. 招待予告（個別相談 / オートウェビナー） ---- */
   msgs.push({
-    stage:'オファー予告', role:'“なぜ今か”と“何が手に入るか”を先に伝える', when:'4日後',
+    stage:'ご招待の予告', role:`直接売らず ${CV.name} への誘導を予告する`, when:'4日後',
     subject:pick([
-      `【予告】${after}ための方法を、まとめてお渡しします`,
-      `明日、大事なお知らせがあります`,
-      `ここまで読んだあなたにこそ、届けたいものがあります`
+      `【予告】明日、${who}のあなたへ特別なご案内があります`,
+      `${after}ために、次にやるべきこと`,
+      `ここまで読んだあなたにこそ、受け取ってほしいものがあります`
     ],r),
     body:[
       `${hi()}`,
-      `ここまで5通、読み進めてくれて本当にありがとうございます。それだけで、あなたが本気だと分かります。`,
-      `これまでお伝えしてきた「${after}ための正しい順番」——それを、独学の遠回りなしで最短で実践できるようにまとめたのが「${product}」です。`,
-      offer? `中身はこんな内容です👇\n${offer}` : `${who}が迷わず①②③を進められるよう、必要なものを一式そろえました。`,
-      `なぜ“今”お伝えするのか。それは、ここまで読んでくれたあなたが、一番いいタイミングにいるからです。関心が高まっている今動くのと、忘れた頃に動くのとでは、結果がまるで変わります。`,
-      deadline? `そして今回は、${deadline}という特別なご案内を予定しています。詳細は次回。` : `詳しいご案内は次回お送りします。`,
+      `ここまで読み進めてくれて本当にありがとうございます。それだけで、あなたが本気だと伝わってきます。`,
+      `これまで「${after}ための正しい順番」をお伝えしてきましたが——正直、文章だけで全部をお渡しするには限界があります。あなたの状況は、あなただけのものだからです。`,
+      isConsult
+        ? `そこで明日、あなたの今の状況を直接おうかがいして、${after}までの道筋を一緒に描く【${CV.name}】をご案内します。売り込みの場ではありません。あなた専用の“次の一手”を持ち帰ってもらう時間です。`
+        : `そこで明日、${after}ための全体像を体系的に学べる【${CV.name}】をご案内します。好きな時間に視聴できる形なので、忙しくても大丈夫です。`,
+      deadline? `※今回は${deadline}という特典もご用意しています。詳しくは次回。` : `詳しいご案内は次回お送りします。楽しみにしていてください。`,
       `${end()}`
     ].join(sep),
-    cta:'商品を初めて明示。緊急性の“理由”を仕込む'
+    cta:`商品を直接オファーせず、まず ${CV.name} への参加を“予告”して期待を高める`
   });
 
-  /* ---- 6. オファー本体 ---- */
+  /* ---- 6. 招待本体（相談 / ウェビナーへ誘導） ---- */
   msgs.push({
-    stage:'オファー', role:'商品・価格の見せ方・特典・保証で決断を後押し', when:'5日後',
+    stage:`${CV.name}へのご招待`, role:'商品を直接売らず、次の接点へ誘導するのが本命CTA', when:'5日後',
     subject:pick([
-      `【ご案内】${product}、受付を開始しました`,
-      `${after}への最短ルート、こちらです`,
-      `お待たせしました。今日から受け取れます`
+      `【ご案内】${CV.name}、受付を開始しました`,
+      isConsult? `${after}ための道筋を、一緒に描きませんか？` : `${after}ための全体像を、1本にまとめました`,
+      `お待たせしました。${CV.reg}を受け付けています`
     ],r),
     body:[
       `${hi()}`,
-      `お待たせしました。「${product}」を正式にご案内します。`,
-      `これは、${who}が「${pain}」から抜け出し、${after}ための${p.label==='無料〜3千円'?'入口':'プログラム'}です。`,
-      offer? `【手に入るもの】\n${offer}` : `【手に入るもの】\n・${after}ための正しい順番（①②③の型）\n・迷ったときに立ち返れる手順\n・実践をやり切るためのサポート`,
-      p.trust>=3? `正直、価格以上の価値があると自負しています。それでも「自分にできるか不安」という方のために、安心して踏み出せる形（サポート／保証）もご用意しました。リスクはこちらで引き受けます。`
-               : `${who}が“今日から動ける”ことだけを考えて設計しました。難しい前提知識は要りません。`,
+      `お待たせしました。【${CV.name}】のご案内です。`,
+      isConsult
+        ? `これは、${who}のあなたの状況を直接おうかがいして、「${pain}」から抜け出し${after}ための“あなた専用の道筋”を一緒に描く時間です。`
+        : `これは、${who}が「${pain}」から抜け出し${after}ための考え方と手順を、順序立てて学べるオンライン講座です。好きなタイミングで${CV.verb}いただけます。`,
+      isConsult
+        ? `【この相談で持ち帰れるもの】\n・あなたの現状に対する“次の一手”\n・遠回りを避ける優先順位\n・${after}までの現実的なステップ`
+        : `【このセミナーで手に入るもの】\n・${after}ための全体像（①②③の型）\n・つまずきポイントとその回避法\n・今日から動ける具体的な第一歩`,
       proof? `すでに実践した方の声：「${proof}」` : ``,
-      deadline? `⚠️ 今回のご案内は${deadline}。ここを過ぎると同じ条件では受け取れません。` : `迷っている時間も、${pain}が続く時間です。まず一歩、踏み出してみてください。`,
-      `👉 詳細を見て受け取る：${'{リンクをここに}'}`,
+      isConsult
+        ? `「売り込まれそう」と身構えなくて大丈夫です。無理な勧誘は一切しません。まずは話を聞きに来てください。`
+        : `参加費は無料。お名前とメールだけで、すぐに${CV.verb}いただけます。`,
+      `👉 ${CV.cta}：${CV.link}`,
       `${end()}`
     ].filter(Boolean).join(sep),
-    cta:'ここが本命。ボタン/リンクを明確に置く（{リンクをここに}を差し替え）'
+    cta:`本命CTA＝商品購入ではなく ${CV.name} の${CV.reg}へ誘導（${CV.link} を実際のリンクに差し替え）`
   });
 
   /* ---- 7. 締切・反論処理・最終CTA ---- */
   msgs.push({
-    stage:'締切と最終後押し', role:'反論処理＋緊急性でクロージング', when:'6日後（締切当日）',
+    stage:'締切と最終後押し', role:`${CV.name}の${CV.reg}を、反論処理＋緊急性で確定させる`, when:'6日後（締切当日）',
     subject:pick([
-      deadline? `【本日締切】${product}、まもなく受付終了です` : `【最終案内】${product}のご案内は今日までです`,
+      deadline? `【本日締切】${CV.name}のご案内は今日までです` : `【最終案内】${CV.name}の${CV.reg}は今日で一区切りです`,
       `最後にもう一度だけ、あなたに伝えたいこと`,
       `“やらない後悔”だけはしてほしくないから`
     ],r),
     body:[
       `${hi()}`,
-      deadline? `いよいよ${deadline}。「${product}」のご案内は、まもなく終了します。` : `「${product}」のご案内は、今日で一区切りです。`,
+      deadline? `いよいよ${deadline}。【${CV.name}】のご案内は、まもなく終了します。` : `【${CV.name}】のご案内は、今日で一区切りです。`,
       `迷っている方のために、よくいただく不安に正直にお答えします👇`,
-      `Q.「自分にできるか不安」\n→ 大丈夫です。順番通りに進めるだけなので、${who}のための設計になっています。むしろ不安な人ほど型に乗ると伸びます。`,
+      isConsult
+        ? `Q.「相談したら売り込まれない？」\n→ しません。あなたの状況を整理して、次の一手を持ち帰ってもらうための時間です。合わなければそれで大丈夫です。`
+        : `Q.「時間が取れるか不安」\n→ 好きな時間に視聴できる形なので大丈夫です。スキマ時間で${CV.verb}いただけます。`,
       `Q.「今じゃなくてもいい？」\n→ その“いつか”が来ないのが、${pain}が続く最大の理由です。関心が高い今こそ、一番動きやすいタイミングです。`,
-      p.trust>=3? `Q.「価格に見合う？」\n→ ${after}を独学で手探りする時間と遠回りを考えれば、むしろ近道です。だから安心のサポート/保証も付けています。` : `Q.「本当に無理なく続けられる？」\n→ 最小の一歩から始められるよう作りました。`,
-      `${who}が${after}姿を、私は本気で見たいと思っています。最後の一歩を、一緒に踏み出しましょう。`,
-      `👉 締切前に受け取る：${'{リンクをここに}'}`,
+      `${who}が${after}姿を、私は本気で見たいと思っています。最後の一歩、${CV.name}で一緒に踏み出しましょう。`,
+      `👉 締切前に${CV.reg}する：${CV.link}`,
       `${end()}`
     ].join(sep),
-    cta:'反論をつぶし、締切で背中を押す。リンクを再掲'
+    cta:`商品ではなく ${CV.name} の${CV.reg}を締切で後押し。リンク再掲`
   });
 
   return msgs;
@@ -473,7 +490,7 @@ function collect(){
     proof:document.getElementById('i_proof').value,
     offer:document.getElementById('i_offer').value,
     deadline:document.getElementById('i_deadline').value,
-    price:getPrice(), medium:getMedium(), tone:getTone(),
+    price:getPrice(), medium:getMedium(), tone:getTone(), goal:getGoal(),
     _salt:saltCounter
   };
 }
